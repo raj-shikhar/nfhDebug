@@ -1,7 +1,8 @@
 import firewall
-import analyzer
+import analayzer 
 import socket
 from scapy.all import *
+from scapy.all import IP, TCP, UDP, Ether
 import sqlite3
 import hashlib
 
@@ -38,19 +39,21 @@ def send_packet(packet):
 
         # Convert the packet to a bytes object
         raw_packet = bytes(packet)
+        # print(type(raw_packet))
 
         # Send the packet to the server
         client_socket.sendall(raw_packet)
         print("HTTP Packet sent successfully.")
     except Exception as e:
-        print("Error:", e)
+        print("Error checkpoint:", e)
     finally:
         # Close the socket
         client_socket.close()
     
-    honeypot_log_result = analyzer.getResult() 
+    honeypot_log_result = analayzer.getResult() 
     firewall_result = firewall.packet_process(packet)
     return (honeypot_log_result, firewall_result)
+    # return firewall_result
 
 
 def decision(result):
@@ -117,8 +120,10 @@ if __name__ == "__main__":
     }
     """
 
+    imgEle = "https://www.lotus-qa.com/wp-content/uploads/2020/02/testing.jpg"
+
     # Create an HTTP packet with HTML payload
-    http_packet = IP(dst="127.0.0.1") / TCP(dport=80) / Raw(load=html_payload)
+    http_packet = IP(dst="127.0.0.1") / TCP(dport=80) / Raw(load=imgEle)
 
     # Send the HTTP packet to the server and get results
     result = send_packet(http_packet)

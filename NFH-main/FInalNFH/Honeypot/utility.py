@@ -19,6 +19,180 @@ import sys
 import requests
 import io
 
+####
+
+
+
+class U:
+    @staticmethod
+    def process_html(html_content):
+        """Process HTML content for errors or issues."""
+        errors = []
+
+        # Check for potential XSS vulnerabilities
+        if "<script>" in html_content:
+            errors.append("Potential XSS detected in HTML content.")
+
+        # Use a regex to find any inline event handlers (e.g., onclick, onload)
+        event_handlers = re.findall(r'\s*on[a-zA-Z]+\s*=', html_content)
+        if event_handlers:
+            errors.append(f"Inline event handlers detected: {event_handlers}")
+
+        # Try to parse the HTML to check for well-formedness
+        try:
+            # Parse the HTML content
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(html_content, parser)
+
+            # Check for any <script> tags outside <head>
+            scripts = tree.xpath("//script")
+            for script in scripts:
+                if script.getparent().tag != "head":
+                    errors.append("Found <script> tag outside <head>.")
+
+            # Additional checks for common vulnerabilities could go here...
+
+        except (etree.XMLSyntaxError, etree.DocumentInvalid) as e:
+            errors.append(f"HTML parsing error: {str(e)}")
+
+        # Check for common security issues
+        if '<iframe' in html_content:
+            errors.append("Potential clickjacking risk with <iframe> tag detected.")
+
+        # Optionally, you can check for specific tags or attributes that should not be present
+        forbidden_tags = ['script', 'iframe', 'object', 'embed']
+        for tag in forbidden_tags:
+            if f'<{tag}' in html_content:
+                errors.append(f"Forbidden tag <{tag}> detected.")
+
+        return errors
+
+    @staticmethod
+    def process_json(json_string):
+        """Process JSON content for malicious intent."""
+        errors = []
+        
+        def detect_malicious_intent(json_obj):
+            detected_errors = []
+            for key, value in json_obj.items():
+                if "<script>" in value:
+                    detected_errors.append(f"Potential XSS detected in key '{key}': {value}")
+
+                # Check for potential SQL injection attacks
+                sql_pattern = re.compile(r"\b(?:select|insert|update|delete|drop|alter)\b", re.IGNORECASE)
+                if re.search(sql_pattern, value):
+                    detected_errors.append(f"Potential SQL injection detected in key '{key}': {value}")
+
+            return detected_errors
+
+        try:
+            # Load JSON string into Python object
+            json_obj = json.loads(json_string)
+
+            # Validate the JSON object against an allowlist
+            if isinstance(json_obj, dict):
+                # Detect malicious intent
+                errors = detect_malicious_intent(json_obj)
+                return errors
+
+            else:
+                raise ValueError("Invalid JSON format: Only dictionary objects are allowed.")
+
+        except json.JSONDecodeError as e:
+            errors.append(f"Error decoding JSON: {e}")
+            return errors
+
+        except ValueError as e:
+            errors.append(f"ValueError JSON: {e}")
+            return errors
+        
+    @staticmethod
+    def process_image(payload):
+        """Process image content and return any errors."""
+        try:
+            from PIL import Image
+            from io import BytesIO
+
+            image = Image.open(BytesIO(payload))
+            errors = []
+
+            # Example check: check for image size
+            if image.size[0] > 2000 or image.size[1] > 2000:
+                errors.append("Warning: Image size exceeds 2000x2000.")
+
+            return errors
+        except Exception as e:
+            return [f"Error processing image: {str(e)}"]
+
+    @staticmethod
+    def process_audio(payload):
+        """Process audio content and return any errors."""
+        try:
+            from pydub import AudioSegment
+            from io import BytesIO
+
+            audio = AudioSegment.from_file(BytesIO(payload))
+            errors = []
+
+            # Example check: check for duration
+            if len(audio) > 300000:  # 5 minutes in milliseconds
+                errors.append("Warning: Audio duration exceeds 5 minutes.")
+
+            return errors
+        except Exception as e:
+            return [f"Error processing audio: {str(e)}"]
+
+    @staticmethod
+    def process_video(payload):
+        """Process video content and return any errors."""
+        try:
+            import cv2
+            import numpy as np
+            from io import BytesIO
+
+            video = cv2.VideoCapture(BytesIO(payload))
+            errors = []
+
+            if not video.isOpened():
+                errors.append("Error: Unable to open video file.")
+
+            # Additional checks could be added here
+
+            return errors
+        except Exception as e:
+            return [f"Error processing video: {str(e)}"]
+
+    @staticmethod
+    def process_text(payload):
+        """Process plain text content and return any errors."""
+        try:
+            errors = []
+            text = payload.decode('utf-8', errors='ignore')
+
+            # Example check: check for length
+            if len(text) > 1000:
+                errors.append("Warning: Text content exceeds 1000 characters.")
+
+            return errors
+        except Exception as e:
+            return [f"Error processing text: {str(e)}"]
+
+    @staticmethod
+    def process_binary(payload):
+        """Process binary content and return any errors."""
+        try:
+            errors = []
+            # Example check: file size
+            if len(payload) > 1048576:  # 1 MB
+                errors.append("Warning: Binary content exceeds 1 MB.")
+
+            return errors
+        except Exception as e:
+            return [f"Error processing binary data: {str(e)}"]
+
+
+####
+
 def download_file(url):
     response = requests.get(url)
     if response.status_code == 200:

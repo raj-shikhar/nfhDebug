@@ -1,7 +1,14 @@
-
-import magic
+# webrequest.py
 from utility import U
-from scapy.all import *
+from scapy.all import Raw
+import magic
+# from lxml import etree
+
+
+
+# import magic
+# from utility import U
+# from scapy.all import *
 
 def process(packet):
     def detect_content_type(payload):
@@ -31,4 +38,7 @@ def process(packet):
                 pass
 
     return errors
+
+
+
     
