@@ -1,0 +1,6 @@
+scapy
+python-magic
+selenium==4.1.0
+pyftpdlib
+dhcppython
+dnspython
