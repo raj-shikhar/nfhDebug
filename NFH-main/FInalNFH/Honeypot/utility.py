@@ -1,6 +1,7 @@
 import json
 import re
 import subprocess
+from docx import Document
 import magic
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -9,7 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from lxml import etree
-from docx import Document
 from PIL import Image
 from moviepy.editor import VideoFileClip
 from pydub import AudioSegment

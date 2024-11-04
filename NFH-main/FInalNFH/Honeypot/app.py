@@ -1,10 +1,8 @@
 import threading
 import socket
 import logging
-from scapy.all import IP, TCP, UDP, Ether
-import DHCP, WEBRequest #DNS, FTP, MySQL, POSTgreSQL, SMTP, SSH, TELNET# WEBRequest
-# import IMAP
-# import POP3
+from scapy.all import IP, TCP, UDP, Raw
+import DHCP, WEBRequest
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -16,20 +14,9 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 protocol_handler = {
-    80: WEBRequest,           # HTTP
-    # 21: FTP,                  # FTP
-    67: DHCP                 # DHCP
-    # 53: DNS,                  # DNS
-    # 22: SSH,                  # SSH
-    # 25: SMTP,                 # SMTP
-    # 23: TELNET,               # Telnet
-    # 3306: MySQL,              # MySQL
-    # 5432: POSTgreSQL,         # PostgreSQL
-    # 143: IMAP,                # IMAP
-    # 110: POP3,                # POP3
-    # 443: SSH,                 # HTTPS
-    # 465: SSH,                 # SMTPS
-    # 995: SSH,                 # POP3S
+    80: WEBRequest,                # FTP
+    67: DHCP,                 # DHCP
+                  # POP3S
     # Add more protocols and their corresponding handlers here
 }
 
@@ -75,11 +62,11 @@ def receive():
     server.bind((host, port))
     server.listen()
     while True:
-        client = server.accept()
-        address = server.accept()
+        client, address = server.accept()
         client_thread = threading.Thread(target=handle_client, args=(client, address))
         client_thread.start()
-    
+
+
 
 if __name__ == "__main__":
     receive()

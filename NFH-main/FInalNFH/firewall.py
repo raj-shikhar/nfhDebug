@@ -1,6 +1,8 @@
 from scapy.all import *
+from scapy.all import IP, TCP, UDP, Raw, send, sr1  # Import necessary layers
 import sqlite3
 import hashlib
+
 
 # Create a database connection for the rules
 conn_rules = sqlite3.connect("rules.db")

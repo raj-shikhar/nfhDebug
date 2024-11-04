@@ -1,0 +1,1 @@
+2024-11-04 11:35:07,735 - ERROR - Error processing packet for port 80: a bytes-like object is required, not 'str'
