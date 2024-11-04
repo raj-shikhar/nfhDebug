@@ -55,5 +55,5 @@ def packet_process(packet):
 
             if packet_info_rule or packet_info_rule_content:
                 return True,attribute
-    return False()
+    return False,()
 
